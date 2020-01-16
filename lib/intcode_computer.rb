@@ -235,6 +235,13 @@ class IntcodeComputerV2 < IntcodeComputer
     register_operation 8, Equals.new(self)
   end
 
+  alias_method :execute!, :execute
+
+  def execute
+    execute!
+  rescue Read::NoInput
+  end
+
   def input=(value)
     (Array.try_convert(value) || [value]).each { |v| @inputs << v }
   end

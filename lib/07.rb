@@ -31,12 +31,8 @@ class AmplifierArray
 
     until amplifiers.all?(&:finished?)
       amplifiers.each do |amplifier|
-        begin
-          amplifier.input = output
-          amplifier.execute
-        rescue Read::NoInput
-        end
-
+        amplifier.input = output
+        amplifier.execute
         output = amplifier.output
       end
     end
