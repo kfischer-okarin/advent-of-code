@@ -13,13 +13,13 @@ Vector = Struct.new('Vector', :x, :y) do
   def +(other)
     ensure_vector other
 
-    Vector.new(x + other.x, y + other.y)
+    self.class.new(x + other.x, y + other.y)
   end
 
   def -(other)
     ensure_vector other
 
-    Vector.new(x - other.x, y - other.y)
+    self.class.new(x - other.x, y - other.y)
   end
 
   def inspect
