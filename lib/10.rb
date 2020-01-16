@@ -19,10 +19,6 @@ module Task10
   module_function :greatest_common_factor
 
   class Vector < ::Vector
-    def -(other)
-      Vector.new(x - other.x, y - other.y)
-    end
-
     def negated
       Vector.new(-x, -y)
     end

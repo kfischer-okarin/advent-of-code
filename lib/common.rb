@@ -11,12 +11,24 @@ end
 
 Vector = Struct.new('Vector', :x, :y) do
   def +(other)
-    raise unless other.is_a? Vector
+    ensure_vector other
 
     Vector.new(x + other.x, y + other.y)
   end
 
+  def -(other)
+    ensure_vector other
+
+    Vector.new(x - other.x, y - other.y)
+  end
+
   def inspect
     "(#{x}, #{y})"
+  end
+
+  private
+
+  def ensure_vector(other)
+    raise unless other.is_a? Vector
   end
 end
