@@ -9,6 +9,10 @@ def read_input_columns(number)
   lines.map { |l| l.split(',') }
 end
 
+def read_intcode_program(number)
+  read_input_columns(number)[0].map(&:to_i)
+end
+
 Vector = Struct.new('Vector', :x, :y) do
   def +(other)
     ensure_vector other

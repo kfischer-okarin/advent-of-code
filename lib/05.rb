@@ -2,7 +2,7 @@ require_relative 'common'
 require_relative 'intcode_computer'
 
 if $PROGRAM_NAME == __FILE__
-  program = read_input_columns('05')[0].map(&:to_i)
+  program = read_intcode_program('05')
 
   computer = IntcodeComputerV2.new(program)
   computer.input = 1

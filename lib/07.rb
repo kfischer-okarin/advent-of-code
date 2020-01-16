@@ -42,7 +42,7 @@ class AmplifierArray
 end
 
 if $PROGRAM_NAME == __FILE__
-  program = read_input_columns('07')[0].map(&:to_i)
+  program = read_intcode_program('07')
 
   amplifiers = AmplifierArray.new(program)
   highest_signal = amplifiers.optimize_phase_settings([0, 1, 2, 3, 4].permutation)

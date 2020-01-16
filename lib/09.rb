@@ -3,7 +3,7 @@ require_relative 'intcode_computer'
 
 
 if $PROGRAM_NAME == __FILE__
-  program = read_input_columns('09')[0].map(&:to_i)
+  program = read_intcode_program('09')
 
   computer = IntcodeComputerV3.new(program)
   computer.input = 1
