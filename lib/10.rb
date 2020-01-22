@@ -3,28 +3,13 @@ require 'set'
 require_relative 'common'
 
 module Task10
-
-  def greatest_common_factor(big, small)
-    return big if small.zero?
-    return small if big.zero?
-
-    return greatest_common_factor(small, big) if small > big
-
-    rest = big % small
-    return small if rest.zero?
-
-    greatest_common_factor(small, rest)
-  end
-
-  module_function :greatest_common_factor
-
   class Vector < ::Vector
     def negated
       Vector.new(-x, -y)
     end
 
     def unit_length
-      gcf = Task10.greatest_common_factor(x.abs, y.abs)
+      gcf = greatest_common_factor(x.abs, y.abs)
       Vector.new(x / gcf, y / gcf)
     end
 
