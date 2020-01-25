@@ -77,6 +77,14 @@ Vector = Struct.new('Vector', :x, :y) do
     self.class.new(x - other.x, y - other.y)
   end
 
+  def hash
+    [x, y].hash
+  end
+
+  def eql?(other)
+    x == other.x && y == other.y
+  end
+
   def inspect
     "(#{x}, #{y})"
   end
@@ -86,4 +94,35 @@ Vector = Struct.new('Vector', :x, :y) do
   def ensure_vector(other)
     raise unless other.is_a? Vector
   end
+end
+
+class MapRenderer
+  def initialize(elements)
+    @elements = elements
+  end
+
+  def render
+    y_range.map { |y|
+      x_range.map { |x| render_element elements[Vector.new(x, y)] }.join ''
+    }.join("\n")
+  end
+
+  protected
+
+  def render_element(element)
+    ' '
+  end
+
+  private
+
+  attr_reader :elements
+
+  def y_range
+    elements.keys.map { |c| c.y }.instance_eval { (min..max).enum_for(:reverse_each) }
+  end
+
+  def x_range
+    elements.keys.map { |c| c.x }.instance_eval { (min..max).enum_for(:each) }
+  end
+
 end

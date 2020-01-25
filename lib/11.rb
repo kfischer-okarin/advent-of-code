@@ -38,10 +38,16 @@ module Task11
     end
 
     def draw
-      min_x, max_x = @colors.keys.map { |c| c.x }.instance_eval { [min, max] }
-      min_y, max_y = @colors.keys.map { |c| c.y }.instance_eval { [min, max] }
-      (min_y..max_y).reverse_each do |y|
-        puts (min_x..max_x).map { |x| @colors[Vector.new(x, y)] == WHITE ? 'X' : ' ' }.join ''
+      puts HullRenderer.new(@colors).render
+    end
+
+    private
+
+    class HullRenderer < MapRenderer
+      protected
+
+      def render_element(element)
+        element == WHITE ? 'X' : ' '
       end
     end
   end
