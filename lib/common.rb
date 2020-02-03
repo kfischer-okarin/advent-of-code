@@ -77,6 +77,10 @@ Vector = Struct.new('Vector', :x, :y) do
     self.class.new(x - other.x, y - other.y)
   end
 
+  def negated
+    self.class.new(-x, -y)
+  end
+
   def hash
     [x, y].hash
   end

@@ -4,10 +4,6 @@ require_relative 'common'
 
 module Task10
   class Vector < ::Vector
-    def negated
-      Vector.new(-x, -y)
-    end
-
     def unit_length
       gcf = greatest_common_factor(x.abs, y.abs)
       Vector.new(x / gcf, y / gcf)
