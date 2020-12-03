@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 def read_input_lines(number)
   open("#{File.dirname(__FILE__)}/#{number}-input.txt") do |f|
     f.readlines.map(&:strip)
@@ -29,9 +31,9 @@ def prime_numbers_until(n)
   result = (2..n).to_a
   current = 0
   while current < result.size
-    result = result.reject { |k|
+    result = result.reject do |k|
       k != result[current] && (k % result[current]).zero?
-    }
+    end
     current += 1
   end
   result
@@ -106,14 +108,14 @@ class MapRenderer
   end
 
   def render
-    y_range.map { |y|
+    y_range.map do |y|
       x_range.map { |x| render_element elements[Vector.new(x, y)] }.join ''
-    }.join("\n")
+    end.join("\n")
   end
 
   protected
 
-  def render_element(element)
+  def render_element(_element)
     ' '
   end
 
@@ -122,11 +124,10 @@ class MapRenderer
   attr_reader :elements
 
   def y_range
-    elements.keys.map { |c| c.y }.instance_eval { (min..max).enum_for(:reverse_each) }
+    elements.keys.map(&:y).instance_eval { (min..max).enum_for(:reverse_each) }
   end
 
   def x_range
-    elements.keys.map { |c| c.x }.instance_eval { (min..max).enum_for(:each) }
+    elements.keys.map(&:x).instance_eval { (min..max).enum_for(:each) }
   end
-
 end

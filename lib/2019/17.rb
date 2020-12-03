@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'set'
 
 require_relative 'common'
@@ -14,9 +16,9 @@ module Task17
     end
 
     def intersections
-      scaffold_positions.select { |coordinates|
+      scaffold_positions.select do |coordinates|
         neighbor_count(coordinates) >= 3
-      }
+      end
     end
 
     private
@@ -24,9 +26,9 @@ module Task17
     attr_reader :scaffold_positions
 
     def neighbor_directions(coordinates)
-      [Vector.new(1, 0), Vector.new(-1, 0), Vector.new(0, 1), Vector.new(0, -1)].select { |direction|
+      [Vector.new(1, 0), Vector.new(-1, 0), Vector.new(0, 1), Vector.new(0, -1)].select do |direction|
         scaffold_positions.include?(coordinates + direction)
-      }
+      end
     end
 
     def neighbor_count(coordinates)

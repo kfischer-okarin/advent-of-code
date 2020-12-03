@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'set'
 
 require_relative 'common'
@@ -47,7 +49,7 @@ class Ship
   end
 
   def find(goal)
-    while true do
+    loop do
       current = frontier.pop
 
       return distance_from_start[current] if current == goal
@@ -87,7 +89,7 @@ class Space
     @planets.values.map(&:orbiting_count).sum
   end
 
-  alias :describe :instance_eval
+  alias describe instance_eval
 end
 
 if $PROGRAM_NAME == __FILE__

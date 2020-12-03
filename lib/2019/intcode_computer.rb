@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'bigdecimal'
 
 Parameter = Struct.new('Parameter', :value, :mode) do
@@ -133,19 +135,19 @@ class IntcodeComputer
   end
 
   def parameters
-    (1..operation.parameter_count).map { |k|
+    (1..operation.parameter_count).map do |k|
       Parameter.new(memory[@position + k], parameter_mode(k))
-    }
+    end
   end
 
   def parameter_mode(k)
-    decimal_mask = 10 * 10 ** k
+    decimal_mask = 10 * 10**k
     (current_opcode / decimal_mask) % 10
   end
 end
 
 class Read < Operation
-  class NoInput < Exception; end
+  class NoInput < RuntimeError; end
 
   def initialize(computer)
     super computer, 1
@@ -192,7 +194,7 @@ end
 
 class JumpIfFalse < Jump
   def should_jump?(param)
-    value_of(param) == 0
+    value_of(param).zero?
   end
 end
 
@@ -235,7 +237,7 @@ class IntcodeComputerV2 < IntcodeComputer
     register_operation 8, Equals.new(self)
   end
 
-  alias_method :execute!, :execute
+  alias execute! execute
 
   def execute
     execute!

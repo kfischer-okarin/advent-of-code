@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../../lib/2019/10'
 
 module Task10
@@ -5,8 +7,8 @@ module Task10
     describe Vector do
       describe '#unit_length' do
         it 'returns the vector with unit length' do
-          expect(Vector.new(4, 8).unit_length).to eq (Vector.new(1, 2))
-          expect(Vector.new(0, 8).unit_length).to eq (Vector.new(0, 1))
+          expect(Vector.new(4, 8).unit_length).to eq(Vector.new(1, 2))
+          expect(Vector.new(0, 8).unit_length).to eq(Vector.new(0, 1))
         end
       end
 
@@ -16,7 +18,7 @@ module Task10
           expect(Vector.new(1, 0).angle).to eq Math::PI / 2
           expect(Vector.new(0, 1).angle).to eq Math::PI
           expect(Vector.new(-1, 0).angle).to eq 3 * Math::PI / 2
-          expect(Vector.new(1, 1).angle).to eq ((2 * Math::PI) - Vector.new(-1, 1).angle)
+          expect(Vector.new(1, 1).angle).to eq((2 * Math::PI) - Vector.new(-1, 1).angle)
         end
       end
     end
@@ -50,21 +52,21 @@ module Task10
 
           it 'adds the asteroids as each others neighbor' do
             expect(asteroid_a.neighbors).to eq({
-              Vector.new(1, 1) => SortedSet.new([
-                Asteroid::Neighbor.new(asteroid_b, 4),
-                Asteroid::Neighbor.new(asteroid_c, 8)
-              ])
-            })
+                                                 Vector.new(1, 1) => SortedSet.new([
+                                                                                     Asteroid::Neighbor.new(asteroid_b, 4),
+                                                                                     Asteroid::Neighbor.new(asteroid_c, 8)
+                                                                                   ])
+                                               })
             expect(asteroid_b.neighbors).to eq({
-              Vector.new(-1, -1) => SortedSet.new([Asteroid::Neighbor.new(asteroid_a, 4)]),
-              Vector.new(1, 1) => SortedSet.new([Asteroid::Neighbor.new(asteroid_c, 4)])
-            })
+                                                 Vector.new(-1, -1) => SortedSet.new([Asteroid::Neighbor.new(asteroid_a, 4)]),
+                                                 Vector.new(1, 1) => SortedSet.new([Asteroid::Neighbor.new(asteroid_c, 4)])
+                                               })
             expect(asteroid_c.neighbors).to eq({
-              Vector.new(-1, -1) => SortedSet.new([
-                Asteroid::Neighbor.new(asteroid_b, 4),
-                Asteroid::Neighbor.new(asteroid_a, 8)
-              ])
-            })
+                                                 Vector.new(-1, -1) => SortedSet.new([
+                                                                                       Asteroid::Neighbor.new(asteroid_b, 4),
+                                                                                       Asteroid::Neighbor.new(asteroid_a, 8)
+                                                                                     ])
+                                               })
           end
         end
       end
@@ -77,7 +79,7 @@ module Task10
         let(:result) { space.best_asteroid }
 
         describe 'Example 1' do
-          let(:map) {
+          let(:map) do
             [
               '.#..#',
               '.....',
@@ -85,7 +87,7 @@ module Task10
               '....#',
               '...##'
             ]
-          }
+          end
 
           it 'is at position 3, 4' do
             expect(result.coordinates).to eq Vector.new(3, 4)
@@ -97,7 +99,7 @@ module Task10
         end
 
         describe 'Example 2' do
-          let(:map) {
+          let(:map) do
             [
               '......#.#.',
               '#..#.#....',
@@ -110,7 +112,7 @@ module Task10
               '##...#..#.',
               '.#....####'
             ]
-          }
+          end
 
           it 'is at position 5, 8' do
             expect(result.coordinates).to eq Vector.new(5, 8)
@@ -122,7 +124,7 @@ module Task10
         end
 
         describe 'Example 3' do
-          let(:map) {
+          let(:map) do
             [
               '#.#...#.#.',
               '.###....#.',
@@ -135,7 +137,7 @@ module Task10
               '......#...',
               '.####.###.'
             ]
-          }
+          end
 
           it 'is at position 1, 2' do
             expect(result.coordinates).to eq Vector.new(1, 2)
@@ -147,7 +149,7 @@ module Task10
         end
 
         describe 'Example 4' do
-          let(:map) {
+          let(:map) do
             [
               '.#..#..###',
               '####.###.#',
@@ -160,7 +162,7 @@ module Task10
               '.##...##.#',
               '.....#.#..'
             ]
-          }
+          end
 
           it 'is at position 6, 3' do
             expect(result.coordinates).to eq Vector.new(6, 3)
@@ -172,7 +174,7 @@ module Task10
         end
 
         describe 'Example 5' do
-          let(:map) {
+          let(:map) do
             [
               '.#..##.###...#######',
               '##.############..##.',
@@ -195,7 +197,7 @@ module Task10
               '#.#.#.#####.####.###',
               '###.##.####.##.#..##'
             ]
-          }
+          end
 
           it 'is at position 11, 13' do
             expect(result.coordinates).to eq Vector.new(11, 13)

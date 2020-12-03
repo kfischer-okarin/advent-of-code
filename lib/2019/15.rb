@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'common'
 require_relative 'intcode_computer'
 
@@ -26,7 +28,7 @@ module Task15
       until @frontier.empty?
         current = @frontier.pop
 
-        @map[current].neighbors.keys.each do |direction|
+        @map[current].neighbors.each_key do |direction|
           neighbor = current + direction
           next if @came_from.include? neighbor
 
@@ -42,7 +44,7 @@ module Task15
     def initialize(program)
       @computer = IntcodeComputerV3.new(program)
       @position = Vector.new(0, 0)
-      @map = {position => Field.new}
+      @map = { position => Field.new }
       @steps = []
       @oxygen_system_position = nil
     end
@@ -131,13 +133,13 @@ module Task15
         self.oxygen_system_position = target_position
         true
       else
-        raise RuntimeError.new('Unknown output')
+        raise 'Unknown output'
       end
     end
 
     def set_wall(position)
       map[position] = :wall
-      DIRECTIONS.keys.each do |direction|
+      DIRECTIONS.each_key do |direction|
         neighbor_position = position + direction
         next unless map[neighbor_position].is_a? Field
 
@@ -151,14 +153,15 @@ module Task15
       new_field = Field.new
       map[position] = new_field
 
-      DIRECTIONS.keys.each do |direction|
+      DIRECTIONS.each_key do |direction|
         neighbor_position = position + direction
         neighbor = map[neighbor_position]
 
-        if neighbor.is_a? Field
+        case neighbor
+        when Field
           new_field.set_neighbor(direction, neighbor)
           neighbor.set_neighbor(direction.negated, new_field)
-        elsif neighbor == :wall
+        when :wall
           new_field.set_wall direction
         end
       end
@@ -175,7 +178,6 @@ module Task15
       end
     end
   end
-
 
   if $PROGRAM_NAME == __FILE__
     program = read_intcode_program('15')

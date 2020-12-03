@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'set'
 
 require_relative 'common'
@@ -20,7 +22,7 @@ module Task10
     def angle
       # Angle between zero degree vector (0, -1) and self
       # a * b / |a| * |b|
-      cos = -y / self.length
+      cos = -y / length
       if x >= 0
         Math.acos(cos)
       else
@@ -56,9 +58,7 @@ module Task10
     end
 
     def add_neighbor(direction, neighbor)
-      if !@neighbors.key?(direction)
-        @neighbors[direction] = SortedSet.new
-      end
+      @neighbors[direction] = SortedSet.new unless @neighbors.key?(direction)
       @neighbors[direction] << neighbor
     end
 
@@ -87,7 +87,7 @@ module Task10
         neighbors = copy_neighbors
         sorted_directions = neighbors.keys.sort { |a, b| a.angle <=> b.angle }
 
-        until sorted_directions.empty? do
+        until sorted_directions.empty?
           sorted_directions.each do |direction|
             next_asteroid = neighbors[direction].to_a[0]
             neighbors[direction].delete next_asteroid
@@ -133,10 +133,10 @@ module Task10
 
     def determine_visibility
       processed = Set.new
-      @asteroids.each do |coordinates, asteroid|
+      @asteroids.each do |_coordinates, asteroid|
         processed << asteroid
 
-        @asteroids.each do |coordinates, other_asteroid|
+        @asteroids.each do |_coordinates, other_asteroid|
           next if processed.include? other_asteroid
 
           asteroid.determine_visibility(other_asteroid)

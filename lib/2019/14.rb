@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'common'
 
 module Task14
@@ -7,8 +9,8 @@ module Task14
       ElementAmount.new(type, amount.to_i)
     end
 
-    def *(number)
-      ElementAmount.new(type, amount * number)
+    def *(other)
+      ElementAmount.new(type, amount * other)
     end
 
     def inspect
@@ -34,7 +36,7 @@ module Task14
     end
 
     def missing_elements
-      elements.select { |type, amount| amount.negative? }.map { |type, amount| ElementAmount.new(type, -amount) }
+      elements.select { |_type, amount| amount.negative? }.map { |type, amount| ElementAmount.new(type, -amount) }
     end
 
     private
@@ -77,10 +79,10 @@ module Task14
 
   class Production
     def initialize(reaction_descriptions)
-      @reactions = reaction_descriptions.map { |description|
+      @reactions = reaction_descriptions.map do |description|
         reaction = parse_reaction(description)
         [reaction.produced_element, reaction]
-      }.to_h
+      end.to_h
       @materials = Materials.new
     end
 

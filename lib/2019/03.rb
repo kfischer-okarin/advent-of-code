@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require_relative 'common'
 
 module Task03
   Wire = Struct.new('Wire', :type, :distance_from_port)
-
 
   class WireGrid
     def initialize
@@ -35,22 +36,22 @@ module Task03
     end
 
     def print
-      min_x = @positions.keys.map { |vec| vec.x }.min
-      max_x = @positions.keys.map { |vec| vec.x }.max
-      min_y = @positions.keys.map { |vec| vec.y }.min
-      max_y = @positions.keys.map { |vec| vec.y }.max
+      min_x = @positions.keys.map(&:x).min
+      max_x = @positions.keys.map(&:x).max
+      min_y = @positions.keys.map(&:y).min
+      max_y = @positions.keys.map(&:y).max
       (min_y..max_y).each do |y|
         line = []
         (min_x..max_x).each do |x|
           pos = Vector.new(x, y)
-          if pos == Vector.new(0, 0)
-            line << 'O'
-          elsif @crossings.key? pos
-            line << 'X'
-          else
-            line << (@positions[pos]&.type || ' ')
-            # line << (@positions[pos]&.distance_from_port&.%(10) || ' ')
-          end
+          line << if pos == Vector.new(0, 0)
+                    'O'
+                  elsif @crossings.key? pos
+                    'X'
+                  else
+                    (@positions[pos]&.type || ' ')
+                    # line << (@positions[pos]&.distance_from_port&.%(10) || ' ')
+                  end
         end
         p line.join
       end

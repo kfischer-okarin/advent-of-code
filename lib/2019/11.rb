@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'common'
 require_relative 'intcode_computer'
 
@@ -40,8 +42,6 @@ module Task11
     def draw
       puts HullRenderer.new(@colors).render
     end
-
-    private
 
     class HullRenderer < MapRenderer
       protected
@@ -109,7 +109,7 @@ module Task11
     hull.paint WHITE
     robot = Robot.new(program, hull)
     robot.run
-    puts "2) Painted ID:"
+    puts '2) Painted ID:'
     hull.draw
   end
 end

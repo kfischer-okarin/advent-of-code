@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+
 require_relative 'common'
 require_relative 'intcode_computer'
-
 
 if $PROGRAM_NAME == __FILE__
   program = read_intcode_program('09')

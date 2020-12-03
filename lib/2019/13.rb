@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'io/console'
 
 require_relative 'common'
@@ -55,9 +57,10 @@ module Task13
         else
           current = computer.output
           tiles[position] = current
-          if current == PADDLE
+          case current
+          when PADDLE
             @paddle = position
-          elsif current == BALL
+          when BALL
             @ball = position
           end
         end
@@ -117,7 +120,6 @@ module Task13
       end
     end
   end
-
 
   if $PROGRAM_NAME == __FILE__
     program = read_intcode_program('13')

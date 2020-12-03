@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'common'
 
 module Task16
@@ -79,6 +81,7 @@ module Task16
       result = 0
       indexes.each do |i|
         break if i > value.size - 1
+
         result += value[i]
       end
       result
@@ -105,13 +108,12 @@ module Task16
     skip = data[0..6].join('').to_i
 
     # Skipped digits is greater than half of the length so calculating the back half is enough
-    relevant_data = data[skip..-1]
-    100.times do |k|
+    relevant_data = data[skip..]
+    100.times do |_k|
       relevant_data = calc_back_half(relevant_data)
     end
     relevant_data[0..7].join('').to_i
   end
-
 
   if $PROGRAM_NAME == __FILE__
     data = read_input_lines('16')[0].chars.map(&:to_i)
@@ -120,7 +122,7 @@ module Task16
 
     puts "1) After 100 phases: #{fft.first_eight}"
 
-    result_2 = Task16::task2((data * 10000))
+    result_2 = Task16.task2((data * 10_000))
     puts "2) 10000 times repeated After 100 phases: #{result_2}"
   end
 end

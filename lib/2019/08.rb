@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'common'
 
 def count(n, layer)
@@ -24,9 +26,9 @@ class Image
     @h = h
     layer_length = (w * h)
     @layer_count = encoded_image.size / layer_length
-    @layers = layer_count.times.map { |k|
+    @layers = layer_count.times.map do |k|
       Layer.new(encoded_image[(k * layer_length)...((k + 1) * layer_length)])
-    }
+    end
   end
 
   def minimum_zero_layer
@@ -34,11 +36,11 @@ class Image
   end
 
   def print_image
-    final_pixels = layers.each_with_object([]) { |layer, result|
+    final_pixels = layers.each_with_object([]) do |layer, result|
       layer.content.each_with_index do |pixel, index|
         result[index] = pixel if !result[index] || result[index] == 2
       end
-    }
+    end
     @h.times do |y|
       @w.times do |x|
         print final_pixels[(@w * y) + x]
@@ -52,8 +54,6 @@ class Image
   attr_reader :layers
 end
 
-
-
 if $PROGRAM_NAME == __FILE__
   encoded_image = read_input_lines('08')[0].chars.map(&:to_i)
 
@@ -61,6 +61,6 @@ if $PROGRAM_NAME == __FILE__
 
   minimum_zero_layer = image.minimum_zero_layer
   puts "1) Layer with minimum zeros, ones * twos: #{minimum_zero_layer.count(1) * minimum_zero_layer.count(2)}"
-  puts "2) Final image:"
+  puts '2) Final image:'
   image.print_image
 end

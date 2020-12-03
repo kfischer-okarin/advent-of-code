@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'common'
 
 def fuel_for(mass)
@@ -8,7 +10,6 @@ masses = read_input_lines('01').map(&:to_i)
 
 naive_fuel = masses.map { |m| fuel_for(m) }.sum
 p "Part 1: Naive fuel: #{naive_fuel}"
-
 
 def real_fuel_for(mass)
   result = fuel_for(mass)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'common'
 require_relative 'intcode_computer'
 
@@ -23,11 +25,11 @@ class AmplifierArray
   def run_with_settings(phase_settings)
     output = 0
 
-    amplifiers = phase_settings.map { |setting|
-      IntcodeComputerV2.new(program).tap { |amplifier|
+    amplifiers = phase_settings.map do |setting|
+      IntcodeComputerV2.new(program).tap do |amplifier|
         amplifier.input = setting
-      }
-    }
+      end
+    end
 
     until amplifiers.all?(&:finished?)
       amplifiers.each do |amplifier|

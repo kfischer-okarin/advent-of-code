@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'common'
 
 module Task12
@@ -63,8 +65,6 @@ module Task12
       bodies.map(&:energy).sum
     end
 
-    private
-
     class Body
       attr_reader :position, :velocity
 
@@ -91,11 +91,11 @@ module Task12
     attr_reader :steps
 
     def self.for_all_coordinates(initial_positions)
-      %i[x y z].map { |coordinate|
+      %i[x y z].map do |coordinate|
         repeat_finder = new(initial_positions, coordinate)
         repeat_finder.find_loop
         repeat_finder.steps
-      }
+      end
     end
 
     def initialize(initial_positions, coordinate)
@@ -119,15 +119,15 @@ module Task12
     attr_reader :system, :coordinate, :initial_state
 
     def current_state
-      system.bodies.map { |body|
+      system.bodies.map do |body|
         [body.position.send(coordinate), body.velocity.send(coordinate)]
-      }.flatten
+      end.flatten
     end
 
     def current_velocities
-      system.bodies.map { |body|
+      system.bodies.map do |body|
         [body.velocity.send(coordinate)]
-      }.flatten
+      end.flatten
     end
   end
 
