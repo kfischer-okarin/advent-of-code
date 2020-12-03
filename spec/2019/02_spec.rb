@@ -1,4 +1,4 @@
-require_relative '../lib/02'
+require_relative '../../lib/2019/02'
 
 RSpec.describe '02' do
   let(:computer) { IntcodeComputer.new(program) }

@@ -1,4 +1,4 @@
-require_relative '../lib/10'
+require_relative '../../lib/2019/10'
 
 module Task10
   RSpec.describe '10' do

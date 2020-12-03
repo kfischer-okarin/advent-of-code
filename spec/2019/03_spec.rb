@@ -1,4 +1,4 @@
-require_relative '../lib/03'
+require_relative '../../lib/2019/03'
 
 RSpec.describe '03' do
   let(:grid) { Task03::WireGrid.new }
