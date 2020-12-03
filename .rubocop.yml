@@ -3,3 +3,10 @@ AllCops:
 
 Style/Documentation:
   Enabled: false
+
+Metrics/BlockLength:
+  Exclude:
+    - spec/**/*.rb
+
+Style/BlockDelimiters:
+  EnforcedStyle: semantic
