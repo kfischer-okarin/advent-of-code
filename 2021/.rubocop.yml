@@ -28,6 +28,7 @@ Naming/MethodParameterName:
 Style/GlobalVars:
   AllowedVariables:
     - $gtk
+    - $scene
 
 Metrics/MethodLength:
   Exclude:

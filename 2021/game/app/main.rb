@@ -1,87 +1,63 @@
+require 'app/solutions.rb'
+
+SOLUTIONS = {}
+
 def tick(args)
-  setup(args) if args.tick_count.zero?
-  render(args)
-  process_input(args)
+  $scene = Menu.new if args.tick_count.zero?
+
+  $scene.tick(args)
+  $scene = Menu.new if args.inputs.keyboard.key_down.escape
 end
 
-def setup(args)
-  args.state.depths = read_problem_input('01').split("\n").map(&:to_i)
-  args.state.left_index = 0
-  args.state.x_scale = 3
-  args.state.result.number_of_increases = calc_number_of_increases(args.state.depths)
-  args.state.result.number_of_window_increases = calc_number_of_window_increases(args.state.depths)
-end
+class Menu
+  def initialize
+    @buttons = SOLUTIONS.keys.sort!.map { |key|
+      {
+        solution_class: SOLUTIONS[key]
+      }.tap { |button|
+        button[:label] = button[:solution_class].title
+        width = $gtk.calcstringbox(button[:label])[0] + 20
+        button[:rect] = { x: 640 - width.idiv(2), y: 720 - (key * 60), w: width, h: 40 }
+        button[:hover] = false
+      }
+    }
+  end
 
-def read_problem_input(input_id)
-  $gtk.read_file("inputs/#{input_id}.txt")
-end
+  def tick(args)
+    render_buttons(args)
+    reset_hover
+    handle_mouse(args)
+  end
 
-def calc_number_of_increases(depths)
-  depths.each_cons(2).count { |a, b| b > a }
-end
+  private
 
-def calc_number_of_window_increases(depths)
-  window_sums = depths.each_cons(3).map { |a, b, c| a + b + c }
-  window_sums.each_cons(2).count { |a, b| b > a }
-end
+  def render_buttons(args)
+    args.outputs.primitives << @buttons.map { |button|
+      button_background = button[:hover] ? button[:rect].to_solid : button[:rect].to_border
+      label_color = button[:hover] ? { r: 255, g: 255, b: 255 } : { r: 0, g: 0, b: 0 }
+      [
+        button_background,
+        { x: 640, y: button[:rect].y + 30, text: button[:label], alignment_enum: 1 }.label!(label_color)
+      ]
+    }
+  end
 
-def render(args)
-  render_sea_floor(args)
-  render_solution(args)
-  render_instructions(args)
-end
+  def reset_hover
+    @buttons.each { |button| button[:hover] = false }
+  end
 
-def render_sea_floor(args)
-  dephts = args.state.depths
-  left_index = args.state.left_index
-  x_scale = args.state.x_scale
+  def handle_mouse(args)
+    mouse = args.inputs.mouse
 
-  args.outputs.primitives << (0..samples_per_screen(args)).map { |index|
-    depth_index = left_index + index
+    hover_button = @buttons.find { |button| mouse.inside_rect? button[:rect] }
+    return unless hover_button
 
-    { x: index * x_scale, y: 0, w: x_scale, h: y_for_depth(dephts[depth_index]), r: 0, g: 89, b: 89 }.solid!
-  }
-end
+    hover_button[:hover] = true
+    return unless mouse.down
 
-def y_for_depth(depth)
-  720 - depth.idiv(10)
-end
-
-def render_solution(args)
-  args.outputs.primitives << [
-    { x: 1260, y: 700, text: "Total Measurements: #{args.state.depths.size}", alignment_enum: 2 }.label!,
-    { x: 1260, y: 680, text: "Number of increases: #{args.state.result.number_of_increases}", alignment_enum: 2 }.label!,
-    { x: 1260, y: 660, text: "Number of window increases: #{args.state.result.number_of_window_increases}", alignment_enum: 2 }.label!
-  ]
-end
-
-def render_instructions(args)
-  args.outputs.primitives << [
-    {
-      x: 20, y: 20,
-      text: '← → or trackpad to scroll sea floor',
-      r: 255, g: 255, b: 255,
-      vertical_alignment_enum: 0
-    }.label!
-  ]
-end
-
-def process_input(args)
-  left_right = get_left_right_input(args.inputs)
-  return if left_right.zero?
-
-  args.state.left_index = (args.state.left_index + (left_right * 5)).clamp(0, args.state.depths.size - samples_per_screen(args) - 1)
-end
-
-def get_left_right_input(inputs)
-  left_right = inputs.keyboard.left_right
-  return left_right unless left_right.zero?
-
-  (inputs.mouse.wheel&.x || 0) * 3
-end
-
-def samples_per_screen(args)
-  1280.idiv(args.state.x_scale)
+    args.state.data = args.state.new_entity(:data)
+    $scene = hover_button[:solution_class].new(args.state.data)
+  end
 end
 
 $gtk.reset
