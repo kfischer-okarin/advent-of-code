@@ -13,14 +13,30 @@ class Day01
     process_input(args)
   end
 
+  class Calculation
+    def initialize(depths)
+      @depths = depths
+    end
+
+    def number_of_increases
+      @depths.each_cons(2).count { |a, b| b > a }
+    end
+
+    def number_of_window_increases
+      window_sums = @depths.each_cons(3).map { |a, b, c| a + b + c }
+      window_sums.each_cons(2).count { |a, b| b > a }
+    end
+  end
+
   private
 
   def setup
     @state.depths = read_problem_input('01').split("\n").map(&:to_i)
     @state.left_index = 0
     @state.x_scale = 3
-    @state.result.number_of_increases = calc_number_of_increases(@state.depths)
-    @state.result.number_of_window_increases = calc_number_of_window_increases(@state.depths)
+    calculation = Calculation.new(@state.depths)
+    @state.result.number_of_increases = calculation.number_of_increases
+    @state.result.number_of_window_increases = calculation.number_of_window_increases
   end
 
   def calc_number_of_increases(depths)
