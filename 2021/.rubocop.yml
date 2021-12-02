@@ -29,6 +29,7 @@ Style/GlobalVars:
   AllowedVariables:
     - $gtk
     - $scene
+    - $menu
 
 Metrics/MethodLength:
   Exclude:

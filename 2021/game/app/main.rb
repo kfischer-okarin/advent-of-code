@@ -1,13 +1,22 @@
 require 'app/menu.rb'
 require 'app/solutions.rb'
 
-SOLUTIONS = {}
+SOLUTIONS = {} # rubocop:disable Style/MutableConstant
 
 def tick(args)
-  $scene = Menu.new if args.tick_count.zero?
+  setup(args) if args.tick_count.zero?
 
   $scene.tick(args)
-  $scene = Menu.new if args.inputs.keyboard.key_down.escape
+  show_menu if args.inputs.keyboard.key_down.escape
+end
+
+def setup(args)
+  $menu = Menu.new(args)
+  show_menu
+end
+
+def show_menu
+  $scene = $menu
 end
 
 $gtk.reset
