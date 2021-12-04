@@ -24,6 +24,7 @@ Naming/MethodParameterName:
     - r
     - g
     - b
+    - id
 
 Style/GlobalVars:
   AllowedVariables:
