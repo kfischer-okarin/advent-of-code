@@ -20,9 +20,14 @@ class Day03
 
   def setup
     @state.dianostic_report = read_problem_input('03').split("\n")
-    @state.one_counts = [0] * @state.dianostic_report[0].size
-    @state.index = -1
-    @state.offset = 0
+    @state.bit_count = @state.dianostic_report.first.length
+    @state.gamma_epsilon_search = {
+      items: @state.dianostic_report.dup,
+      one_counts: [0] * @state.bit_count,
+      index: -1,
+      offset: 0
+    }
+    @state.state = :gamma_epsilon_search
   end
 
   def render(args)
@@ -31,18 +36,33 @@ class Day03
   end
 
   def render_inputs(args)
-    current_index = @state.index
-    start_index = [current_index - 5, 0].max
-    end_index = [current_index + 5, @state.dianostic_report.size - 1].min
-    args.outputs.primitives << (start_index..end_index).map { |index|
-      input_label(text: @state.dianostic_report[index], offset: ((current_index - index) * 50) + @state.offset)
-    }
-    args.outputs.primitives << { x: 850, y: 340, w: 220, h: 45, r: 255, g: 0, b: 0 }.border!
+    case @state.state
+    when :gamma_epsilon_search
+      render_search(args, @state.gamma_epsilon_search, x: 960)
+    when :oxygen_co2_search
+      args.outputs.primitives << { x: 800, y: 650, text: 'Oxygen Generator Rating:', alignment_enum: 1 }.label!
+      render_search(args, @state.oxygen_generator_rating_search, x: 800)
+      args.outputs.primitives << { x: 1120, y: 650, text: 'CO2 Scrubber Rating:', alignment_enum: 1 }.label!
+      render_search(args, @state.co2_scrubber_rating_search, x: 1120)
+    end
   end
 
-  def input_label(text:, offset:)
+  def render_search(args, search, x:)
+    current_index = search.index
+    start_index = [current_index - 5, 0].max
+    end_index = [current_index + 5, search.items.size - 1].min
+    args.outputs.primitives << (start_index..end_index).map { |index|
+      input_label(x: x, text: search.items[index], offset: ((current_index - index) * 50) + search.offset)
+    }
+    args.outputs.primitives << { x: x - 110, y: 340, w: 220, h: 45, r: 255, g: 0, b: 0 }.border!
+    return unless search.key? :bit
+
+    args.outputs.primitives << { x: x - 100 + (search.bit * 16.5), y: 340, w: 18, h: 45, r: 255, g: 0, b: 0 }.border!
+  end
+
+  def input_label(text:, offset:, x:)
     {
-      x: 960, y: 360 + offset,
+      x: x, y: 360 + offset,
       text: text, size_enum: 8 - (offset.abs / 100),
       alignment_enum: 1, vertical_alignment_enum: 1,
       a: 255 - offset.abs
@@ -60,13 +80,32 @@ class Day03
       { x: 200, y: 200, text: 'Power Consumption:', alignment_enum: 1 }.label!,
       { x: 200, y: 170, text: power_consumption.to_s, alignment_enum: 1 }.label!,
     ]
+    return unless @state.state == :finished
+
+    oxygen_generator_rating = @state.oxygen_generator_rating_search.items.first
+    co2_scrubber_rating = @state.co2_scrubber_rating_search.items.first
+    args.outputs.primitives << [
+      { x: 500, y: 600, text: 'Oxygen Generator Rating:', alignment_enum: 1 }.label!,
+      { x: 500, y: 550, text: oxygen_generator_rating, alignment_enum: 1, size_enum: 8 }.label!,
+      { x: 500, y: 500, text: "(#{decimal_value(oxygen_generator_rating)})", alignment_enum: 1 }.label!,
+      { x: 500, y: 400, text: 'CO2 Scrubber Rating:', alignment_enum: 1 }.label!,
+      { x: 500, y: 350, text: co2_scrubber_rating, alignment_enum: 1, size_enum: 8 }.label!,
+      { x: 500, y: 300, text: "(#{decimal_value(co2_scrubber_rating)})", alignment_enum: 1 }.label!,
+      { x: 500, y: 200, text: 'Life Support Rating:', alignment_enum: 1 }.label!,
+      {
+        x: 500, y: 170,
+        text: (decimal_value(oxygen_generator_rating) * decimal_value(co2_scrubber_rating)).to_s,
+        alignment_enum: 1
+      }.label!
+    ]
   end
 
   def gamma_rate_bits
-    @state.one_counts.map { |count|
-      if count > @state.index.half
+    search = @state.gamma_epsilon_search
+    search.one_counts.map { |count|
+      if count > search.index.half
         '1'
-      elsif count < @state.index.half
+      elsif count < search.index.half
         '0'
       else
         '?'
@@ -75,10 +114,11 @@ class Day03
   end
 
   def epsilon_rate_bits
-    @state.one_counts.map { |count|
-      if count > @state.index.half
+    search = @state.gamma_epsilon_search
+    search.one_counts.map { |count|
+      if count > search.index.half
         '0'
-      elsif count < @state.index.half
+      elsif count < search.index.half
         '1'
       else
         '?'
@@ -101,26 +141,86 @@ class Day03
   end
 
   def update
-    update_input_position
-  end
-
-  def update_input_position
-    return if @state.index >= @state.dianostic_report.size
-
-    @state.offset += 40
-    while @state.offset >= 50
-      @state.index += 1
-      @state.offset -= 50
-      process_entry
+    case @state.state
+    when :gamma_epsilon_search
+      update_gamma_epsilon_search
+    when :oxygen_co2_search
+      update_oxygen_generator_rating_search
+      update_co2_scrubber_rating_search
+      if @state.oxygen_generator_rating_search.items.size == 1 && @state.co2_scrubber_rating_search.items.size == 1
+        @state.state = :finished
+      end
     end
   end
 
-  def process_entry
-    return if @state.index >= @state.dianostic_report.size
+  def update_gamma_epsilon_search
+    update_input_position(@state.gamma_epsilon_search)
+    return unless @state.gamma_epsilon_search.index >= @state.gamma_epsilon_search.items.size
 
-    @state.dianostic_report[@state.index].each_char.with_index do |char, index|
-      @state.one_counts[index] += 1 if char == '1'
+    @state.state = :oxygen_co2_search
+    @state.oxygen_generator_rating_search = build_oxygen_generator_rating_search(@state.gamma_epsilon_search, bit: 0)
+    @state.co2_scrubber_rating_search = build_co2_scrubber_rating_search(@state.gamma_epsilon_search, bit: 0)
+  end
+
+  def update_oxygen_generator_rating_search
+    search = @state.oxygen_generator_rating_search
+    return if search.items.size == 1
+
+    update_input_position(search)
+    return unless search.index >= search.items.size
+
+    @state.oxygen_generator_rating_search = build_oxygen_generator_rating_search(search, bit: search.bit)
+  end
+
+  def update_co2_scrubber_rating_search
+    search = @state.co2_scrubber_rating_search
+    return if search.items.size == 1
+
+    update_input_position(search)
+    return unless search.index >= search.items.size
+
+    @state.co2_scrubber_rating_search = build_co2_scrubber_rating_search(search, bit: search.bit)
+  end
+
+  def update_input_position(search)
+    return if search.index >= search.items.size
+
+    search.offset += 140
+    while search.offset >= 50
+      search.index += 1
+      search.offset -= 50
+      process_entry(search)
     end
+  end
+
+  def process_entry(search)
+    return if search.index >= search.items.size
+
+    search.items[search.index].each_char.with_index do |char, index|
+      search.one_counts[index] += 1 if char == '1'
+    end
+  end
+
+  def build_oxygen_generator_rating_search(search, bit:)
+    most_common_bit = search.one_counts[bit] >= search.items.size.half ? '1' : '0'
+    {
+      items: search.items.select { |item| item[bit] == most_common_bit },
+      one_counts: [0] * @state.bit_count,
+      index: -1,
+      offset: 0,
+      bit: bit + 1
+    }
+  end
+
+  def build_co2_scrubber_rating_search(search, bit:)
+    least_common_bit = search.one_counts[bit] >= search.items.size.half ? '0' : '1'
+    {
+      items: search.items.select { |item| item[bit] == least_common_bit },
+      one_counts: [0] * @state.bit_count,
+      index: -1,
+      offset: 0,
+      bit: bit + 1
+    }
   end
 end
 
