@@ -1,6 +1,3 @@
-require 'lib/bresenham.rb'
-require 'lib/button.rb'
-
 class Day03
   def self.title
     '--- Day 3: Binary Diagnostic ---'
