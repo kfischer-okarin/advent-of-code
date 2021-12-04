@@ -21,12 +21,7 @@ class Day03
   def setup
     @state.dianostic_report = read_problem_input('03').split("\n")
     @state.bit_count = @state.dianostic_report.first.length
-    @state.gamma_epsilon_search = {
-      items: @state.dianostic_report.dup,
-      one_counts: [0] * @state.bit_count,
-      index: -1,
-      offset: 0
-    }
+    @state.gamma_epsilon_search = build_search(@state.dianostic_report.dup)
     @state.state = :gamma_epsilon_search
   end
 
@@ -40,9 +35,9 @@ class Day03
     when :gamma_epsilon_search
       render_search(args, @state.gamma_epsilon_search, x: 960)
     when :oxygen_co2_search
-      args.outputs.primitives << { x: 800, y: 650, text: 'Oxygen Generator Rating:', alignment_enum: 1 }.label!
+      args.outputs.primitives << centered_label(800, 650, 'Oxygen Generator Rating:')
       render_search(args, @state.oxygen_generator_rating_search, x: 800)
-      args.outputs.primitives << { x: 1120, y: 650, text: 'CO2 Scrubber Rating:', alignment_enum: 1 }.label!
+      args.outputs.primitives << centered_label(1120, 650, 'CO2 Scrubber Rating:')
       render_search(args, @state.co2_scrubber_rating_search, x: 1120)
     end
   end
@@ -71,32 +66,31 @@ class Day03
 
   def render_outputs(args)
     args.outputs.primitives << [
-      { x: 200, y: 600, text: 'Gamma Rate:', alignment_enum: 1 }.label!,
+      centered_label(200, 600, 'Gamma Rate:'),
       { x: 200, y: 550, text: gamma_rate_bits, alignment_enum: 1, size_enum: 8 }.label!,
-      { x: 200, y: 500, text: "(#{decimal_value(gamma_rate_bits)})", alignment_enum: 1 }.label!,
-      { x: 200, y: 400, text: 'Epsilon Rate:', alignment_enum: 1 }.label!,
+      centered_label(200, 500, "(#{decimal_value(gamma_rate_bits)})"),
+      centered_label(200, 400, 'Epsilon Rate:'),
       { x: 200, y: 350, text: epsilon_rate_bits, alignment_enum: 1, size_enum: 8 }.label!,
-      { x: 200, y: 300, text: "(#{decimal_value(epsilon_rate_bits)})", alignment_enum: 1 }.label!,
-      { x: 200, y: 200, text: 'Power Consumption:', alignment_enum: 1 }.label!,
-      { x: 200, y: 170, text: power_consumption.to_s, alignment_enum: 1 }.label!,
+      centered_label(200, 300, "(#{decimal_value(epsilon_rate_bits)})"),
+      centered_label(200, 200, 'Power Consumption:'),
+      centered_label(200, 170, power_consumption.to_s)
     ]
     return unless @state.state == :finished
 
     oxygen_generator_rating = @state.oxygen_generator_rating_search.items.first
     co2_scrubber_rating = @state.co2_scrubber_rating_search.items.first
     args.outputs.primitives << [
-      { x: 500, y: 600, text: 'Oxygen Generator Rating:', alignment_enum: 1 }.label!,
+      centered_label(500, 600, 'Oxygen Generator Rating:'),
       { x: 500, y: 550, text: oxygen_generator_rating, alignment_enum: 1, size_enum: 8 }.label!,
-      { x: 500, y: 500, text: "(#{decimal_value(oxygen_generator_rating)})", alignment_enum: 1 }.label!,
-      { x: 500, y: 400, text: 'CO2 Scrubber Rating:', alignment_enum: 1 }.label!,
+      centered_label(500, 500, "(#{decimal_value(oxygen_generator_rating)})"),
+      centered_label(500, 400, 'CO2 Scrubber Rating:'),
       { x: 500, y: 350, text: co2_scrubber_rating, alignment_enum: 1, size_enum: 8 }.label!,
-      { x: 500, y: 300, text: "(#{decimal_value(co2_scrubber_rating)})", alignment_enum: 1 }.label!,
-      { x: 500, y: 200, text: 'Life Support Rating:', alignment_enum: 1 }.label!,
-      {
-        x: 500, y: 170,
-        text: (decimal_value(oxygen_generator_rating) * decimal_value(co2_scrubber_rating)).to_s,
-        alignment_enum: 1
-      }.label!
+      centered_label(500, 300, "(#{decimal_value(co2_scrubber_rating)})"),
+      centered_label(500, 200, 'Life Support Rating:'),
+      centered_label(
+        500, 170,
+        (decimal_value(oxygen_generator_rating) * decimal_value(co2_scrubber_rating)).to_s
+      )
     ]
   end
 
@@ -203,24 +197,27 @@ class Day03
 
   def build_oxygen_generator_rating_search(search, bit:)
     most_common_bit = search.one_counts[bit] >= search.items.size.half ? '1' : '0'
-    {
-      items: search.items.select { |item| item[bit] == most_common_bit },
-      one_counts: [0] * @state.bit_count,
-      index: -1,
-      offset: 0,
+    build_search(
+      search.items.select { |item| item[bit] == most_common_bit },
       bit: bit + 1
-    }
+    )
   end
 
   def build_co2_scrubber_rating_search(search, bit:)
     least_common_bit = search.one_counts[bit] >= search.items.size.half ? '0' : '1'
+    build_search(
+      search.items.select { |item| item[bit] == least_common_bit },
+      bit: bit + 1
+    )
+  end
+
+  def build_search(items, bit: nil)
     {
-      items: search.items.select { |item| item[bit] == least_common_bit },
+      items: items,
       one_counts: [0] * @state.bit_count,
       index: -1,
-      offset: 0,
-      bit: bit + 1
-    }
+      offset: 0
+    }.tap { |search| search[:bit] = bit if bit }
   end
 end
 

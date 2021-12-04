@@ -18,6 +18,10 @@ def bottom_left_labels(*labels, attributes: nil)
   }
 end
 
+def centered_label(x, y, text)
+  { x: x, y: y, text: text, alignment_enum: 1 }.label!
+end
+
 def get_horizontal_scroll_input(inputs, mouse_wheel_factor: 3)
   left_right = inputs.keyboard.left_right
   return left_right unless left_right.zero?
