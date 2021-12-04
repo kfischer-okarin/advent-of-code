@@ -27,8 +27,8 @@ class Button
     ]
   end
 
-  def to_s
-    { id: @id, rect: @rect, label: @label }.to_s
+  def inspect
+    { id: @id, rect: @rect, label: @label }.inspect
   end
 
   private
