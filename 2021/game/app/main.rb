@@ -8,6 +8,7 @@ def tick(args)
 
   $scene.tick(args)
   show_menu if args.inputs.keyboard.key_down.escape
+  args.outputs.primitives << [0, 720, $gtk.current_framerate.to_i.to_s].label unless $gtk.production
 end
 
 def setup(args)
