@@ -26,6 +26,7 @@ class Day04
     @state.marked_numbers = []
     @state.last_announced_number = nil
     @state.winning_board = nil
+    @state.last_winning_board = nil
     @state.scroll_offset = 0
   end
 
@@ -35,13 +36,15 @@ class Day04
         line.split.map(&:to_i).map { |number|
           { number: number, marked: false }
         }
-      }
+      },
+      bingo: false,
+      score: nil
     }
   end
 
   def render(args)
     render_last_announced_number(args)
-    render_winning_board(args) if @state.winning_board
+    render_board_scores(args)
     render_bingo_boards(board_canvas(args))
     render_board_canvas(args)
     render_explanation(args)
@@ -53,18 +56,17 @@ class Day04
     }.label!
   end
 
-  def render_winning_board(args)
-    args.outputs.primitives << [
-      { x: 640, y: 650, text: 'BINGO!', alignment_enum: 1, size_enum: 10 }.label!,
-      { x: 640, y: 600, text: "Winning Board Score: #{score(@state.winning_board)}", alignment_enum: 1 }.label!
-    ]
-  end
+  def render_board_scores(args)
+    if @state.winning_board
+      args.outputs.primitives << {
+        x: 640, y: 650, text: "Winning Board Score: #{@state.winning_board.score}", alignment_enum: 1
+      }.label!
+    end
+    return unless @state.last_winning_board
 
-  def score(board)
-    sum_of_unmarked_numbers = board.numbers.flatten.inject(0) { |sum, number|
-      sum + (number.marked ? 0 : number.number)
-    }
-    sum_of_unmarked_numbers * @state.last_announced_number
+    args.outputs.primitives << {
+      x: 640, y: 600, text: "Last Winning Board Score: #{@state.last_winning_board.score}", alignment_enum: 1
+    }.label!
   end
 
   def board_canvas(args)
@@ -106,11 +108,19 @@ class Day04
         }.label!(number_color(number))
       }
     }
-    return unless @state.winning_board == board
+    return unless board.bingo
 
-    gtk_outputs.primitives << {
-      x: x - 30, y: y - 150, w: 160, h: 160, r: 255, g: 0, b: 0
-    }.border!
+    if @state.winning_board == board
+      render_board_border(gtk_outputs, x, y, r: 255, g: 0, b: 0)
+    elsif @state.last_winning_board == board
+      render_board_border(gtk_outputs, x, y, r: 0, g: 0, b: 255)
+    else
+      render_board_border(gtk_outputs, x, y, r: 0, g: 0, b: 0)
+    end
+  end
+
+  def render_board_border(gtk_outputs, x, y, color)
+    gtk_outputs.primitives << { x: x - 30, y: y - 150, w: 160, h: 160 }.border!(color)
   end
 
   def number_color(number)
@@ -136,7 +146,7 @@ class Day04
   end
 
   def update(args)
-    return if @state.winning_board
+    return if @state.last_winning_board
 
     announce_next_number if args.tick_count.mod_zero? @state.announcement_interval
   end
@@ -152,7 +162,12 @@ class Day04
   def mark_board(board)
     marked_number = board.numbers.flatten.find { |number| number[:number] == @state.last_announced_number }
     marked_number.marked = true if marked_number
-    @state.winning_board = board if bingo?(board)
+    return unless !board.bingo && bingo?(board)
+
+    board.bingo = true
+    board.score = score(board)
+    @state.winning_board ||= board
+    @state.last_winning_board = board if @state.bingo_boards.all?(&:bingo)
   end
 
   def bingo?(board)
@@ -162,6 +177,13 @@ class Day04
       column = board.numbers.map { |line| line[column_index] }
       column.all? { |number| number[:marked] }
     }
+  end
+
+  def score(board)
+    sum_of_unmarked_numbers = board.numbers.flatten.inject(0) { |sum, number|
+      sum + (number.marked ? 0 : number.number)
+    }
+    sum_of_unmarked_numbers * @state.last_announced_number
   end
 end
 
