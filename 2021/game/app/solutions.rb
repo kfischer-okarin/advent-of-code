@@ -1,6 +1,7 @@
 require 'app/solutions/day01.rb'
 require 'app/solutions/day02.rb'
 require 'app/solutions/day03.rb'
+require 'app/solutions/day04.rb'
 
 def read_problem_input(input_id)
   $gtk.read_file("inputs/#{input_id}.txt")
@@ -27,4 +28,11 @@ def get_horizontal_scroll_input(inputs, mouse_wheel_factor: 3)
   return left_right unless left_right.zero?
 
   (inputs.mouse.wheel&.x || 0) * mouse_wheel_factor
+end
+
+def get_vertical_scroll_input(inputs, mouse_wheel_factor: 3)
+  up_down = inputs.keyboard.up_down
+  return up_down unless up_down.zero?
+
+  (inputs.mouse.wheel&.y || 0) * mouse_wheel_factor
 end
