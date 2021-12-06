@@ -2,6 +2,7 @@ require 'app/solutions/day01.rb'
 require 'app/solutions/day02.rb'
 require 'app/solutions/day03.rb'
 require 'app/solutions/day04.rb'
+require 'app/solutions/day05.rb'
 
 def read_problem_input(input_id)
   $gtk.read_file("inputs/#{input_id}.txt")
