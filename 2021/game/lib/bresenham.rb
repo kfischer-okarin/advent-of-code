@@ -11,20 +11,26 @@ module Bresenham
       dy = -(end_y - y).abs
       sy = y < end_y ? 1 : -1
       err = dx + dy
+      step_x = 0
+      step_y = 0
 
       loop do
         break if x == end_x && y == end_y
 
+        step_x = 0
+        step_y = 0
         e2 = 2 * err
         if e2 > dy
           err += dy
           x += sx
-          yielder << [sx, 0]
-        elsif e2 <= dx
+          step_x = sx
+        end
+        if e2 <= dx
           err += dx
           y += sy
-          yielder << [0, sy]
+          step_y = sy
         end
+        yielder << [step_x, step_y]
       end
     end
   end
