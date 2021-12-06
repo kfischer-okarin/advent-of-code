@@ -76,13 +76,13 @@ class Day02
     @state.buttons = [
       Button.new(
         id: :part1,
-        rect: { x: 10, y: 10, w: 30, h: 30 },
+        rect: { x: 1200, y: 10, w: 30, h: 30 },
         label: '1',
         click_handler: ->(_args, _button) { setup(CalculationPart1) }
       ),
       Button.new(
         id: :part2,
-        rect: { x: 50, y: 10, w: 30, h: 30 },
+        rect: { x: 1240, y: 10, w: 30, h: 30 },
         label: '2',
         click_handler: ->(_args, _button) { setup(CalculationPart2.new) }
       )
