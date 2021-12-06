@@ -19,6 +19,7 @@ class Button
 
   def render(gtk_outputs)
     gtk_outputs.primitives << [
+      @rect.to_solid(r: 255, g: 255, b: 255),
       button_background,
       {
         x: @rect.x + @rect.w.idiv(2), y: @rect.y + @rect.h.idiv(2),
