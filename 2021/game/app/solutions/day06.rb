@@ -26,7 +26,7 @@ class Day06
 
   def read_input
     build_fish_counts.tap { |counts|
-      read_problem_input('06').strip.split(',').each do |timer|
+      read_problem_input_as_csv('06').each do |timer|
         counts[timer.to_i] += 1
       end
     }

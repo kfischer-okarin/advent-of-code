@@ -4,6 +4,11 @@ require 'app/solutions/day03.rb'
 require 'app/solutions/day04.rb'
 require 'app/solutions/day05.rb'
 require 'app/solutions/day06.rb'
+require 'app/solutions/day07.rb'
+
+def read_problem_input_as_csv(input_id)
+  read_problem_input(input_id).strip.split(',')
+end
 
 def read_problem_input(input_id)
   $gtk.read_file("inputs/#{input_id}.txt")
