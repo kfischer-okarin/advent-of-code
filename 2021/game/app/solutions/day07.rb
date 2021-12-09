@@ -43,13 +43,27 @@ class Day07
 
   private
 
-  def setup
-    @state.fuel_cost_method = FuelCostPart2
+  def setup(fuel_cost_method = FuelCostPart1)
+    @state.fuel_cost_method = fuel_cost_method
     @state.positions = read_problem_input_as_csv('07').map(&:to_i)
     @state.fuel_costs = @state.positions.map { @state.fuel_cost_method.new }
     @state.offset = 0
     @state.target_position = find_target_position
     @state.spent_fuel = 0
+    @state.buttons = [
+      Button.new(
+        id: :part1,
+        rect: { x: 1200, y: 10, w: 30, h: 30 },
+        label: '1',
+        click_handler: ->(_args, _button) { setup(FuelCostPart1) }
+      ),
+      Button.new(
+        id: :part2,
+        rect: { x: 1240, y: 10, w: 30, h: 30 },
+        label: '2',
+        click_handler: ->(_args, _button) { setup(FuelCostPart2) }
+      )
+    ]
   end
 
   def find_target_position
@@ -69,6 +83,8 @@ class Day07
   def render(args)
     render_crabs(args)
     render_info(args)
+    render_explanation(args)
+    render_select_part_buttons(args)
   end
 
   def render_crabs(args)
@@ -89,10 +105,25 @@ class Day07
     )
   end
 
+  def render_explanation(args)
+    args.outputs.primitives << bottom_left_labels(
+      '↑ ↓ or mouse wheel/trackpad to scroll up/down'
+    )
+  end
+
+  def render_select_part_buttons(args)
+    @state.buttons.each { |button| button.render(args.outputs) }
+  end
+
   def process_inputs(args)
     @state.offset = (
       @state.offset - get_vertical_scroll_input(args.inputs)
     ).clamp(0, 1000 - 130 - 1)
+    handle_buttons(args)
+  end
+
+  def handle_buttons(args)
+    @state.buttons.each { |button| button.tick(args) }
   end
 
   def update
