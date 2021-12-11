@@ -2,5 +2,5 @@ devid=kfischer_okarin
 devtitle=Kevin Fischer
 gameid=advent-of-code-2021
 gametitle=Advent of Code 2021
-version=0.7.0
+version=0.8.0
 icon=metadata/icon.png
