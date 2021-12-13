@@ -18,7 +18,7 @@ class Menu
     width = $gtk.calcstringbox(title)[0] + 20
     Button.new(
       id: number,
-      rect: { x: 640 - width.idiv(2), y: 720 - (number * 60), w: width, h: 40 },
+      rect: { x: 100, y: 730 - (number * 60), w: width, h: 40 },
       label: title,
       click_handler: ->(args, _) { start_solution(args, number) }
     )
