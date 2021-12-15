@@ -1,4 +1,4 @@
-require 'lib/a_star.rb'
+require 'lib/graph_layout.rb'
 
 class Day12
   def self.title
@@ -22,7 +22,7 @@ class Day12
     @state.part = part
     @state.nodes = parse_nodes send(input)
     @state.pathfinder = pathfinder_class_for_part(@state.part).new(@state.nodes)
-    prepare_balancing
+    @layouter = GraphLayout.new CaveGraph.new(@state.nodes), display_size: 550
     @state.state = :graph_balancing
     @state.path_count = 0
     @state.latest_path = nil
@@ -97,7 +97,8 @@ class Day12
       fixed: %w[start end].include?(name),
       big: uppercase?(name)
     }.tap { |node|
-      update_center(node)
+      rect = node.rect
+      node.center = { x: rect.x + rect.w.idiv(2), y: rect.y + rect.h.idiv(2) }
     }
   end
 
@@ -172,59 +173,50 @@ class Day12
     read_problem_input('12')
   end
 
-  def prepare_balancing
-    calc_distances
-    @state.optimal_length = 1240 / (max_distance_between_two_nodes * 2)
-    calc_spring_parameters
-  end
+  # Interface wrapper for GraphLayout
+  class CaveGraph
+    class Node
+      attr_reader :data
 
-  def calc_distances
-    nodes = @state.nodes
-    graph = CaveGraph.new(nodes)
-    nodes.each_key do |from_node|
-      nodes.each_key do |to_node|
-        next if from_node == to_node
+      def initialize(data)
+        @data = data
+      end
 
-        shortest_path = AStar.find_path(graph, from: from_node, to: to_node)
-        nodes[from_node].distances ||= {}
-        nodes[from_node].distances[to_node] = shortest_path.length
-        nodes[to_node].distances ||= {}
-        nodes[to_node].distances[from_node] = shortest_path.length
+      def x
+        @data.center.x
+      end
+
+      def x=(value)
+        @data.rect.x = value - @data.rect.w.idiv(2)
+        @data.center.x = value
+      end
+
+      def y
+        @data.center.y
+      end
+
+      def y=(value)
+        @data.rect.y = value - @data.rect.h.idiv(2)
+        @data.center.y = value
+      end
+
+      def fixed?
+        @data.fixed
       end
     end
-  end
 
-  class CaveGraph
-    def initialize(nodes)
-      @nodes = nodes
+    def initialize(original_nodes_by_name)
+      @nodes_by_name = original_nodes_by_name.transform_values { |node| Node.new(node) }
     end
 
-    def neighbors_of(name)
-      @nodes[name].neighbors
+    def nodes
+      @nodes_by_name.values
     end
 
-    # Djiksstra's algorithm
-    def cost(_from_node, _to_node)
-      1
-    end
-
-    def heuristic(_from_node, _to_node)
-      0
-    end
-  end
-
-  def max_distance_between_two_nodes
-    @state.nodes.values.map(&:distances).map(&:values).flatten.max
-  end
-
-  def calc_spring_parameters
-    @state.nodes.each_value do |node|
-      node.spring_lengths = node.distances.transform_values { |distance|
-        distance * @state.optimal_length
-      }
-      node.spring_strengths = node.distances.transform_values { |distance|
-        10 / (distance**2)
-      }
+    def neighbors_of(node)
+      node_name = node.data.name
+      neighbor_names = @nodes_by_name[node_name].data.neighbors
+      neighbor_names.map { |name| @nodes_by_name[name] }
     end
   end
 
@@ -257,7 +249,7 @@ class Day12
     [
       rect.to_solid(node_color(node)),
       rect.to_border,
-      node.center.label!(
+      node.center.to_label(
         text: node.name, alignment_enum: 1, vertical_alignment_enum: 1
       )
     ]
@@ -292,7 +284,7 @@ class Day12
 
   def render_info(args)
     args.outputs.primitives << top_right_labels(
-      "Paths: #{@state.path_count}"
+      @state.state == :graph_balancing ? 'Layouting graph...' : "Paths: #{@state.path_count}"
     )
   end
 
@@ -303,7 +295,7 @@ class Day12
   def update(args)
     case @state.state
     when :graph_balancing
-      updated = balance_graph # balance_graph(1) for balancing animation
+      updated = layout_graph(100) # layout_graph(1) for balancing animation
       @state.state = :path_finding unless updated
     when :path_finding
       @state.latest_path = find_next_path
@@ -312,126 +304,15 @@ class Day12
     handle_buttons(args)
   end
 
-  def balance_graph(max_iterations = 5000)
+  def layout_graph(max_iterations = 5000)
     iterations = 0
     loop do
-      moving_node = node_with_biggest_delta_value
-      break if moving_node.nil? || iterations > max_iterations
+      updated = @layouter.layout_graph_step
+      break if !updated || iterations > max_iterations
 
-      movement = movement_for(moving_node)
-      moving_node.rect.x += movement.x * 0.1
-      moving_node.rect.y += movement.y * 0.1
-      update_center(moving_node)
       iterations += 1
     end
     iterations.positive?
-  end
-
-  # See AN ALGORITHM FOR DRAWING GENERAL UNDIRECTED GRAPHS
-
-  def node_with_biggest_delta_value
-    delta_values = @state.nodes.transform_values { |node|
-      next -1 if node.fixed
-
-      delta_value(node)
-    }
-    biggest_delta_value_node = @state.nodes.values.max_by { |node| delta_values[node.name] }
-    return if delta_values[biggest_delta_value_node.name] < 100
-
-    biggest_delta_value_node
-  end
-
-  def delta_value(node)
-    Math.sqrt((energy_derivative(node, :x)**2) + (energy_derivative(node, :y)**2))
-  end
-
-  def energy_derivative(node, x_or_y)
-    @state.nodes.values.inject(0) { |sum, other_node|
-      next sum if other_node == node
-
-      strength = node.spring_strengths[other_node.name]
-      diff_x = node.center.x - other_node.center.x
-      diff_y = node.center.y - other_node.center.y
-      length = node.spring_lengths[other_node.name]
-      main_diff = x_or_y == :x ? diff_x : diff_y
-      sum + (
-        strength * (main_diff - ((length * main_diff) / Math.sqrt((diff_x**2) + (diff_y**2))))
-      )
-    }
-  end
-
-  # x_2nd_derivative * dx +    xy_derivative * dy = -x_derivative
-  #    xy_derivative * dx + y_2nd_derivative * dy = -y_derivative
-  #
-  #        x_derivative       xy_derivative           y_derivative    y_2nd_derivative
-  # => - ---------------- - ---------------- * dy = - ------------- - ---------------- * dy
-  #      x_2nd_derivative   x_2nd_derivative          xy_derivative     xy_derivative
-  #
-  #    -x_2nd_derivative * y_2nd_derivative + xy_derivative**2        -x_derivative * xy_derivative + y_derivative * x_2nd_derivative
-  # => ------------------------------------------------------ * dy = ---------------------------------------------------------------
-  #              xy_derivative * x_2nd_derivative                                xy_derivative * x_2nd_derivative
-  #
-  #          (-x_derivative * xy_derivative + y_derivative * x_2nd_derivative) * (xy_derivative * x_2nd_derivative)
-  # => dy =  -----------------------------------------------------------------------------------------------------
-  #               (xy_derivative * x_2nd_derivative) * (-x_2nd_derivative * y_2nd_derivative + xy_derivative**2)
-  #
-  #         -x_derivative * xy_derivative + y_derivative * x_2nd_derivative
-  # => dy = --------------------------------------------------------------
-  #             -x_2nd_derivative * y_2nd_derivative + xy_derivative**2
-  #
-  #           x_derivative  + xy_derivative * dy
-  # => dx = - ----------------------------------
-  #                  x_2nd_derivative
-  def movement_for(node)
-    x_derivative = energy_derivative(node, :x)
-    y_derivative = energy_derivative(node, :y)
-    x_2nd_derivative = energy_2nd_derivative(node, :x)
-    y_2nd_derivative = energy_2nd_derivative(node, :x)
-    xy_derivative = energy_xy_derivative(node)
-
-    dy = (
-      (-x_derivative * xy_derivative) + (y_derivative * x_2nd_derivative)
-    ) / (
-      (-x_2nd_derivative * y_2nd_derivative) + (xy_derivative**2)
-    )
-    dx = -(
-      (x_derivative + (xy_derivative * dy)) / x_2nd_derivative
-    )
-    [dx, dy]
-  end
-
-  def energy_2nd_derivative(node, x_or_y)
-    @state.nodes.values.inject(0) { |sum, other_node|
-      next sum if other_node == node
-
-      strength = node.spring_strengths[other_node.name]
-      diff_x = node.center.x - other_node.center.x
-      diff_y = node.center.y - other_node.center.y
-      length = node.spring_lengths[other_node.name]
-      non_main_diff = x_or_y == :x ? diff_y : diff_x
-      sum + (
-        strength * (1 - ((length * (non_main_diff**2)) / Math.sqrt(((diff_x**2) + (diff_y**2))**3)))
-      )
-    }
-  end
-
-  def energy_xy_derivative(node)
-    @state.nodes.values.inject(0) { |sum, other_node|
-      next sum if other_node == node
-
-      strength = node.spring_strengths[other_node.name]
-      diff_x = node.center.x - other_node.center.x
-      diff_y = node.center.y - other_node.center.y
-      length = node.spring_lengths[other_node.name]
-      sum + (
-        strength * ((length * diff_x * diff_y) / Math.sqrt(((diff_x**2) + (diff_y**2))**3))
-      )
-    }
-  end
-
-  def update_center(node)
-    rect = node.rect
-    node.center = { x: rect.x + rect.w.idiv(2), y: rect.y + rect.h.idiv(2) }
   end
 
   def find_next_path
