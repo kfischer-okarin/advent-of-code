@@ -12,6 +12,9 @@ Style/BlockDelimiters:
 Style/FrozenStringLiteralComment:
   Enabled: false
 
+Style/RandomWithOffset:
+  Enabled: false
+
 Style/RedundantFileExtensionInRequire:
   Exclude:
     - game/**/*

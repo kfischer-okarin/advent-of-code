@@ -1,11 +1,12 @@
 class Button
   attr_accessor :id, :rect, :label, :click_handler
 
-  def initialize(id:, rect:, label:, click_handler: nil)
+  def initialize(id:, rect:, label:, color: nil, click_handler: nil)
     @id = id
     @rect = rect
     @label = label
     @hover = false
+    @color = color || { r: 255, g: 255, b: 255 }
     @click_handler = click_handler || ->(_args, _button) {}
   end
 
@@ -19,7 +20,7 @@ class Button
 
   def render(gtk_outputs)
     gtk_outputs.primitives << [
-      @rect.to_solid(r: 255, g: 255, b: 255),
+      @rect.to_solid(@color),
       button_background,
       {
         x: @rect.x + @rect.w.idiv(2), y: @rect.y + @rect.h.idiv(2),
