@@ -378,9 +378,9 @@ class Day12
 
     def steps_per_tick
       case @nodes.size
-      when 1..10
+      when 1..7
         1
-      when 11..20
+      when 8..10
         5
       else
         20
@@ -399,9 +399,9 @@ class Day12
 
     def steps_per_tick
       case @nodes.size
-      when 1..10
+      when 1..7
         1
-      when 11..20
+      when 8..10
         20
       else
         500
