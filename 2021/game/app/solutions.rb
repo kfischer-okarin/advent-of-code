@@ -10,6 +10,7 @@ require 'app/solutions/day09.rb'
 require 'app/solutions/day10.rb'
 require 'app/solutions/day11.rb'
 require 'app/solutions/day12.rb'
+require 'app/solutions/day13.rb'
 
 def read_problem_input_as_csv(input_id)
   read_problem_input(input_id).strip.split(',')
