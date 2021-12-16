@@ -16,9 +16,14 @@ class Menu
   def build_button(number)
     title = SOLUTIONS[number].title
     width = $gtk.calcstringbox(title)[0] + 20
+    x = case number
+        when 1..12 then 30
+        when 13..24 then 480
+        end
+    y = 670 - (((number - 1) % 12) * 60)
     Button.new(
       id: number,
-      rect: { x: 100, y: 730 - (number * 60), w: width, h: 40 },
+      rect: { x: x, y: y, w: width, h: 40 },
       label: title,
       click_handler: ->(args, _) { start_solution(args, number) }
     )
