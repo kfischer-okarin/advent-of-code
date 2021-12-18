@@ -1,3 +1,5 @@
+require 'lib/render_target.rb'
+
 class Day09
   def self.title
     '--- Day 9: Smoke Basin ---'
@@ -18,8 +20,12 @@ class Day09
   def setup
     @state.heightmap = read_heightmap_from_input
 
-    @state.render_target_initialized = false
-    @state.queued_primitives = []
+    @heightmap_target = RenderTarget.new(
+      :heightmap,
+      size: [700, 700],
+      x: 150,
+      y: 20
+    )
     @state.processing_state = :draw_map
     @state.low_points = []
     @state.biggest_basin_sizes = []
@@ -37,30 +43,8 @@ class Day09
   end
 
   def render(args)
-    heightmap_render_target = get_heightmap_render_target(args)
-    draw_queued_primitives(heightmap_render_target) unless @state.queued_primitives.empty?
-    render_heightmap(args)
+    @heightmap_target.render(args)
     render_info(args)
-  end
-
-  def get_heightmap_render_target(args)
-    args.outputs[:heightmap].tap { |render_target|
-      render_target.width = 700
-      render_target.height = 700
-      render_target.clear_before_render = !@state.render_target_initialized
-      @state.render_target_initialized = true
-    }
-  end
-
-  def draw_queued_primitives(gtk_outputs)
-    gtk_outputs.primitives << @state.queued_primitives
-    @state.queued_primitives = []
-  end
-
-  def render_heightmap(args)
-    args.outputs.primitives << {
-      x: 150, y: 20, w: 700, h: 700, path: :heightmap
-    }.sprite!
   end
 
   def render_info(args)
@@ -92,7 +76,7 @@ class Day09
   def draw_line
     line = @state.heightmap[@state.processed_index]
 
-    @state.queued_primitives.concat(
+    @heightmap_target.primitives.concat(
       line.map_with_index { |height, index|
         rendered_cell_rect(index, @state.processed_index).sprite!(
           path: :pixel, r: height * 25, g: height * 25, b: height * 25
@@ -115,7 +99,7 @@ class Day09
       )
     end
 
-    @state.queued_primitives.concat(primitives)
+    @heightmap_target.primitives.concat(primitives)
   end
 
   def lower_than_neighbors?(x, y)
@@ -131,7 +115,7 @@ class Day09
     low_point = @state.low_points[@state.processed_index]
     basin = find_basin(low_point)
     update_biggest_basins(basin)
-    @state.queued_primitives.concat(
+    @heightmap_target.primitives.concat(
       basin.map { |point|
         rendered_cell_rect(point.x, point.y).sprite!(
           path: :pixel, r: height_at(point.x, point.y) * 25, g: 0, b: 0
