@@ -1,10 +1,12 @@
 const std = @import("std");
 const expect = std.testing.expect;
+const expectEqualStrings = std.testing.expectEqualStrings;
 const fs = std.fs;
+const Allocator = std.mem.Allocator;
 
 pub const StringLiteral = []const u8;
 
-pub fn buildContext(allocator: std.mem.Allocator) Context {
+pub fn buildContext(allocator: Allocator) Context {
     return Context{ .allocator = allocator };
 }
 
@@ -29,6 +31,28 @@ test "readFile returns the contents of a file" {
     defer context.allocator.free(contents);
 
     try expect(std.mem.eql(u8, contents, "Hello, world!\n"));
+}
+
+pub fn arrayFromStringLiteral(allocator: Allocator, literal: StringLiteral) ![]u8 {
+    const s = try allocator.alloc(u8, literal.len);
+    std.mem.copyForwards(u8, s, literal);
+    return s;
+}
+
+test "String Literal Type" {
+    const literal = "Hello, world!";
+    const literal_type = @typeName(@TypeOf(literal));
+    try expectEqualStrings(literal_type, "*const [13:0]u8");
+
+    const dereferenced = literal.*;
+    const dereferenced_type = @typeName(@TypeOf(dereferenced));
+    try expectEqualStrings(dereferenced_type, "[13:0]u8");
+}
+
+test "Build Array from Literal Type" {
+    const array = try arrayFromStringLiteral(std.testing.allocator, "Hello, world!");
+    defer std.testing.allocator.free(array);
+    try expect(std.mem.eql(u8, array, "Hello, world!"));
 }
 
 const DeletableFile = struct {
