@@ -1,5 +1,10 @@
 const std = @import("std");
+const expect = std.testing.expect;
 const fs = std.fs;
+
+pub fn buildContext(allocator: std.mem.Allocator) Context {
+    return Context{ .allocator = allocator };
+}
 
 const Context = struct {
     allocator: std.mem.Allocator,
@@ -12,13 +17,17 @@ const Context = struct {
     }
 };
 
-pub fn buildContext(allocator: std.mem.Allocator) Context {
-    return Context{ .allocator = allocator };
+test "readFile returns the contents of a file" {
+    const context = buildContext(std.testing.allocator);
+
+    const test_file = try createTestFileWithContent("Hello, world!\n");
+    defer test_file.delete() catch {};
+
+    const contents = try context.readFile(test_file.file);
+    defer context.allocator.free(contents);
+
+    try expect(std.mem.eql(u8, contents, "Hello, world!\n"));
 }
-
-const test_dir_path = "tmp/tests";
-
-const expect = std.testing.expect;
 
 const DeletableFile = struct {
     file: fs.File,
@@ -29,6 +38,8 @@ const DeletableFile = struct {
         return self.dir.deleteFile(self.filename);
     }
 };
+
+const test_dir_path = "tmp/tests";
 
 fn createTestFileWithContent(content: []const u8) !DeletableFile {
     const filename = "test_file.txt";
@@ -42,16 +53,4 @@ fn createTestFileWithContent(content: []const u8) !DeletableFile {
         .filename = filename,
         .file = test_file,
     };
-}
-
-test "readFile returns the contents of a file" {
-    const context = buildContext(std.testing.allocator);
-
-    const test_file = try createTestFileWithContent("Hello, world!\n");
-    defer test_file.delete() catch {};
-
-    const contents = try context.readFile(test_file.file);
-    defer context.allocator.free(contents);
-
-    try expect(std.mem.eql(u8, contents, "Hello, world!\n"));
 }
