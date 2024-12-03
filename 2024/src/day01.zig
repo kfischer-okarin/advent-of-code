@@ -28,7 +28,7 @@ const PuzzleInput = struct {
     }
 };
 
-fn parseInput(allocator: std.mem.Allocator, contents: []u8) !PuzzleInput {
+fn parseInput(allocator: std.mem.Allocator, contents: []const u8) !PuzzleInput {
     var iterator = std.mem.tokenizeAny(u8, contents, &[_]u8{ '\n', ' ' });
     var list1 = LocationIdList.init(allocator);
     var list2 = LocationIdList.init(allocator);
@@ -54,21 +54,18 @@ test parseInput {
     \\3   9
     \\3   3
     ;
-    const test_input_array = try utils.arrayFromStringLiteral(allocator, test_input);
-    defer allocator.free(test_input_array);
 
-    const parsed = try parseInput(allocator, test_input_array);
+    const parsed = try parseInput(allocator, test_input);
     defer parsed.deinit();
 
     var expectedList1 = LocationIdList.init(allocator);
-    defer expectedList1.deinit();
     try expectedList1.appendSlice(&[_]u32{ 3, 4, 2, 1, 3, 3 });
     var expectedList2 = LocationIdList.init(allocator);
-    defer expectedList2.deinit();
     try expectedList2.appendSlice(&[_]u32{ 4, 3, 5, 3, 9, 3 });
     const expected = PuzzleInput{
         .list1 = expectedList1,
         .list2 = expectedList2,
     };
+    defer expected.deinit();
     try std.testing.expectEqualDeep(expected, parsed);
 }
