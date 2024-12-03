@@ -2,6 +2,8 @@ const std = @import("std");
 const expect = std.testing.expect;
 const fs = std.fs;
 
+pub const StringLiteral = []const u8;
+
 pub fn buildContext(allocator: std.mem.Allocator) Context {
     return Context{ .allocator = allocator };
 }
@@ -41,7 +43,7 @@ const DeletableFile = struct {
 
 const test_dir_path = "tmp/tests";
 
-fn createTestFileWithContent(content: []const u8) !DeletableFile {
+fn createTestFileWithContent(content: StringLiteral) !DeletableFile {
     const filename = "test_file.txt";
     try fs.cwd().makePath(test_dir_path);
     const test_dir = try fs.cwd().openDir(test_dir_path, .{});
