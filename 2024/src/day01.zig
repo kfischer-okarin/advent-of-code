@@ -28,6 +28,8 @@ const PuzzleInput = struct {
     }
 };
 
+// []const u8 is a subtype of []u8 - it's a stricter contract
+// You can pass a []u8 to a function that expects a []const u8, but not the other way around
 fn parseInput(allocator: std.mem.Allocator, contents: []const u8) !PuzzleInput {
     var iterator = std.mem.tokenizeAny(u8, contents, &[_]u8{ '\n', ' ' });
     var list1 = LocationIdList.init(allocator);
